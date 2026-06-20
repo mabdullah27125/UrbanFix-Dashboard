@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Services Survey — Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2333;
+    --border: #2a3045;
+    --accent: #4f7cff;
+    --accent2: #ff6b6b;
+    --accent3: #ffc94a;
+    --accent4: #5ef0c2;
+    --text: #e8ecf5;
+    --muted: #8891a8;
+    --radius: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 32px 24px 48px;
+  }
+
+  /* ── Header ── */
+  header {
+    max-width: 1200px;
+    margin: 0 auto 40px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .header-left h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #4f7cff 0%, #a78bfa 50%, #5ef0c2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-left p {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .badge span {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent4);
+    box-shadow: 0 0 8px var(--accent4);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ── KPI Row ── */
+  .kpi-row {
+    max-width: 1200px;
+    margin: 0 auto 32px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+
+  .kpi:nth-child(1)::before { background: var(--accent); }
+  .kpi:nth-child(2)::before { background: var(--accent2); }
+  .kpi:nth-child(3)::before { background: var(--accent3); }
+  .kpi:nth-child(4)::before { background: var(--accent4); }
+
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .kpi-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .kpi:nth-child(1) .kpi-value { color: var(--accent); }
+  .kpi:nth-child(2) .kpi-value { color: var(--accent2); }
+  .kpi:nth-child(3) .kpi-value { color: var(--accent3); }
+  .kpi:nth-child(4) .kpi-value { color: var(--accent4); }
+
+  .kpi-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* ── Grid ── */
+  .grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .card:hover { border-color: #3a4260; }
+
+  .card.wide { grid-column: 1 / -1; }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .card-n {
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 3px 10px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+  }
+
+  .chart-wrap.pie { max-width: 280px; margin: 0 auto; }
+  .chart-wrap.bar { width: 100%; }
+
+  canvas { display: block; width: 100% !important; }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    justify-content: center;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .kpi-row { grid-template-columns: 1fr 1fr; }
+    .grid { grid-template-columns: 1fr; }
+    .card.wide { grid-column: 1; }
+  }
+
+  @media (max-width: 480px) {
+    .kpi-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>Home Services Survey</h1>
+    <p>Market Research · Consumer Insights · 2025</p>
+  </div>
+  <div class="badge"><span></span>22 Respondents · Google Forms</div>
+</header>
+
+<!-- KPIs -->
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="kpi-label">Needed a Technician</div>
+    <div class="kpi-value">95.5%</div>
+    <div class="kpi-sub">of respondents</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Faced Difficulty</div>
+    <div class="kpi-value">77.3%</div>
+    <div class="kpi-sub">finding reliable help</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Want One Platform</div>
+    <div class="kpi-value">81.8%</div>
+    <div class="kpi-sub">prefer unified booking</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Platform Very Useful</div>
+    <div class="kpi-value">54.5%</div>
+    <div class="kpi-sub">rate centralized booking</div>
+  </div>
+</div>
+
+<!-- Charts Grid -->
+<div class="grid">
+
+  <!-- Gender -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Gender Distribution</div>
+      <div class="card-n">n = 22</div>
+    </div>
+    <div class="chart-wrap pie"><canvas id="genderChart"></canvas></div>
+    <div class="legend" id="genderLegend"></div>
+  </div>
+
+  <!-- Age Group -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Age Group</div>
+      <div class="card-n">n = 22</div>
+    </div>
+    <div class="chart-wrap pie"><canvas id="ageChart"></canvas></div>
+    <div class="legend" id="ageLegend"></div>
+  </div>
+
+  <!-- Difficulty Finding Technician -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Have you ever faced difficulty finding a reliable technician?</div>
+      <div class="card-n">n = 22</div>
+    </div>
+    <div class="chart-wrap pie"><canvas id="diffChart"></canvas></div>
+    <div class="legend" id="diffLegend"></div>
+  </div>
+
+  <!-- Platform preference -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Would you prefer a platform where multiple services can be booked from one place?</div>
+      <div class="card-n">n = 22</div>
+    </div>
+    <div class="chart-wrap pie"><canvas id="prefChart"></canvas></div>
+    <div class="legend" id="prefLegend"></div>
+  </div>
+
+  <!-- Use online platform -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Would you use an online platform for booking electricians, plumbers, AC technicians?</div>
+      <div class="card-n">n = 22</div>
+    </div>
+    <div class="chart-wrap pie"><canvas id="useChart"></canvas></div>
+    <div class="legend" id="useLegend"></div>
+  </div>
+
+  <!-- Centralized platform usefulness -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Do you think a centralized platform for booking maintenance services would be useful?</div>
+      <div class="card-n">n = 22</div>
+    </div>
+    <div class="chart-wrap pie"><canvas id="centralChart"></canvas></div>
+    <div class="legend" id="centralLegend"></div>
+  </div>
+
+  <!-- Technician Verification -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">How important is technician verification to you?</div>
+      <div class="card-n">n = 22</div>
+    </div>
+    <div class="chart-wrap pie"><canvas id="verifyChart"></canvas></div>
+    <div class="legend" id="verifyLegend"></div>
+  </div>
+
+  <!-- Quick Response Time -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">How important is quick response time?</div>
+      <div class="card-n">n = 22</div>
+    </div>
+    <div class="chart-wrap pie"><canvas id="responseChart"></canvas></div>
+    <div class="legend" id="responseLegend"></div>
+  </div>
+
+  <!-- How find providers -->
+  <div class="card wide">
+    <div class="card-header">
+      <div class="card-title">How do you usually find service providers?</div>
+      <div class="card-n">n = 22</div>
+    </div>
+    <div class="chart-wrap bar" style="height:220px">
+      <canvas id="findChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Biggest challenges -->
+  <div class="card wide">
+    <div class="card-header">
+      <div class="card-title">What is the biggest challenge when hiring a technician?</div>
+      <div class="card-n">n = 22 · multi-select</div>
+    </div>
+    <div class="chart-wrap bar" style="height:260px">
+      <canvas id="challengeChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Services used most -->
+  <div class="card wide">
+    <div class="card-header">
+      <div class="card-title">Which services would you use most frequently?</div>
+      <div class="card-n">n = 22 · multi-select</div>
+    </div>
+    <div class="chart-wrap bar" style="height:280px">
+      <canvas id="servicesChart"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  Chart.defaults.color = '#8891a8';
+  Chart.defaults.font.family = 'Inter, sans-serif';
+  Chart.defaults.font.size = 12;
+
+  const PIE_COLORS = [
+    '#4f7cff', '#ff6b6b', '#ffc94a', '#5ef0c2', '#a78bfa', '#f97316'
+  ];
+
+  function makePie(id, labels, data, legendId) {
+    const ctx = document.getElementById(id).getContext('2d');
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: PIE_COLORS.slice(0, labels.length),
+          borderColor: '#181c27',
+          borderWidth: 3,
+          hoverOffset: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: '60%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.label}: ${ctx.parsed.toFixed(1)}%`
+            }
+          }
+        }
+      }
+    });
+
+    // Custom legend
+    if (legendId) {
+      const container = document.getElementById(legendId);
+      labels.forEach((label, i) => {
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+        item.innerHTML = `<div class="legend-dot" style="background:${PIE_COLORS[i]}"></div><span>${label} — ${data[i]}%</span>`;
+        container.appendChild(item);
+      });
+    }
+  }
+
+  function makeBar(id, labels, data, horizontal = true) {
+    const ctx = document.getElementById(id).getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: labels.map((_, i) => PIE_COLORS[i % PIE_COLORS.length]),
+          borderRadius: 6,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        indexAxis: horizontal ? 'y' : 'x',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.parsed[horizontal ? 'x' : 'y'].toFixed(1)}%`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: '#2a3045' },
+            ticks: { color: '#8891a8' },
+            border: { color: '#2a3045' }
+          },
+          y: {
+            grid: { color: horizontal ? 'transparent' : '#2a3045' },
+            ticks: { color: '#8891a8' },
+            border: { color: '#2a3045' }
+          }
+        }
+      }
+    });
+  }
+
+  // ── Pie Charts ──
+  makePie('genderChart',
+    ['Male', 'Female', 'Prefer not to say'],
+    [72.7, 27.3, 0],
+    'genderLegend'
+  );
+
+  makePie('ageChart',
+    ['18–25', '26–35', '36–45', 'Above 45', 'Under 18'],
+    [81.8, 4.55, 4.55, 9.1, 0],
+    'ageLegend'
+  );
+
+  makePie('diffChart',
+    ['Yes', 'No'],
+    [77.3, 22.7],
+    'diffLegend'
+  );
+
+  makePie('prefChart',
+    ['Yes', 'Maybe', 'No'],
+    [81.8, 18.2, 0],
+    'prefLegend'
+  );
+
+  makePie('useChart',
+    ['Yes', 'Maybe', 'No'],
+    [72.7, 22.7, 4.6],
+    'useLegend'
+  );
+
+  makePie('centralChart',
+    ['Very Useful', 'Useful', 'Neutral', 'Not Useful'],
+    [54.5, 31.8, 13.6, 0],
+    'centralLegend'
+  );
+
+  makePie('verifyChart',
+    ['Very Important', 'Important', 'Neutral', 'Not Important'],
+    [45.5, 45.5, 9.1, 0],
+    'verifyLegend'
+  );
+
+  makePie('responseChart',
+    ['Very Important', 'Important', 'Neutral', 'Not Important'],
+    [68.2, 22.7, 9.1, 0],
+    'responseLegend'
+  );
+
+  // ── Bar Charts ──
+  makeBar('findChart',
+    ['Friends & Family', 'Local Shops', 'Online Platforms', 'Other', 'Social Media'],
+    [50, 40.9, 4.55, 4.55, 0]
+  );
+
+  makeBar('challengeChart',
+    ['Trust Issues', 'Poor Service Quality', 'High Cost', 'Delayed Response', 'Lack of Availability'],
+    [63.6, 63.6, 54.5, 40.9, 40.9]
+  );
+
+  makeBar('servicesChart',
+    ['Electrical', 'AC Repair', 'Plumbing', 'Cleaning', 'General Maintenance', 'Painting', 'Carpentry'],
+    [77.3, 68.2, 63.6, 40.9, 36.4, 9.1, 4.5]
+  );
+</script>
+</body>
+</html>
